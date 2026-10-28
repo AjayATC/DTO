@@ -1,20 +1,42 @@
 package com.example.userapp;
 
+import com.example.userapp.User;
+import com.example.userapp.UserRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
 
-    //constructor-based Dependency Injection
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    public String getUserName() {
-        return userRepository.getUserName();
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    public Optional<User> getUserById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    public User createUser(User user) {
+        return userRepository.save(user);
+    }
+
+    public Optional<User> updateUser(Long id, User user) {
+        return userRepository.update(id, user);
+    }
+
+    public boolean deleteUser(Long id) {
+        return userRepository.deleteById(id);
+    }
+
+    public List<User> searchUsersByName(String name) {
+        return userRepository.findByName(name);
     }
 }
-
-//The service will use the repository to get the user's name.
