@@ -1,14 +1,22 @@
 
 package com.example.userapp;
 
-import com.example.userapp.User;
-import com.example.userapp.UserService;
+import com.example.userapp.dto.UserRequestDTO;
+import com.example.userapp.dto.UserResponseDTO;
+import com.example.userapp.service.UserService;
+
 import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @RestController
 @RequestMapping("/users")
@@ -22,44 +30,40 @@ public class UserController {
 
     // Get all users
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     // Get user by ID
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(
+    public ResponseEntity<UserResponseDTO> getUserById(
             @PathVariable Long id) {
 
-        User user = userService.getUserById(id);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(userService.getUserById(id));
     }
 
-    // Create a user
+    // Create user
     @PostMapping
-    public ResponseEntity<User> createUser(
-            @Valid @RequestBody User user) {
+    public ResponseEntity<UserResponseDTO> createUser(
+            @Valid @RequestBody UserRequestDTO dto) {
 
-        User savedUser = userService.createUser(user);
+        UserResponseDTO savedUser = userService.createUser(dto);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
+        return ResponseEntity.status(HttpStatus.CREATED)
                 .body(savedUser);
     }
 
-
-    // Update a user
+    // Update user
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(
+    public ResponseEntity<UserResponseDTO> updateUser(
             @PathVariable Long id,
-            @Valid @RequestBody User user) {
+            @Valid @RequestBody UserRequestDTO dto) {
 
-        User updatedUser = userService.updateUser(id, user);
-
-        return ResponseEntity.ok(updatedUser);
+        return ResponseEntity.ok(
+                userService.updateUser(id, dto));
     }
 
-    // Delete a user
+    // Delete user
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(
             @PathVariable Long id) {
@@ -69,18 +73,45 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    // Search users by name
     @GetMapping("/search")
-    public List<User> searchUsers(
+    public ResponseEntity<List<UserResponseDTO>> searchUsersByName(
             @RequestParam String name) {
 
-        return userService.searchUsersByName(name);
+        return ResponseEntity.ok(
+                userService.searchUsersByName(name));
     }
 
+    // Find users by email
     @GetMapping("/email")
-    public List<User> getUsersByEmail(
+    public ResponseEntity<List<UserResponseDTO>> getUsersByEmail(
             @RequestParam String email) {
 
-        return userService.getUsersByEmail(email);
+        return ResponseEntity.ok(
+                userService.getUsersByEmail(email));
+    }
+
+
+    @GetMapping("/page")
+    public ResponseEntity<Page<UserResponseDTO>> getUsersPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        if (page < 0 || size < 1 || size > 100) {
+            throw new IllegalArgumentException(
+                    "Page must be >= 0 and size must be between 1 and 100");
+        }
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return ResponseEntity.ok(
+                userService.getUsersPaginated(pageable));
     }
 
 }
