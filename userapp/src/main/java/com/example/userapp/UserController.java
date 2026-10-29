@@ -1,3 +1,4 @@
+
 package com.example.userapp;
 
 import com.example.userapp.User;
@@ -24,15 +25,14 @@ public class UserController {
         return userService.getAllUsers();
     }
 
-    // Get a user by ID
+    // Get user by ID
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(
             @PathVariable Long id) {
 
         return userService.getUserById(id)
                 .map(ResponseEntity::ok)
-                .orElseGet(() ->
-                        ResponseEntity.notFound().build());
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     // Create a user
@@ -40,11 +40,11 @@ public class UserController {
     public ResponseEntity<User> createUser(
             @RequestBody User user) {
 
-        User createdUser = userService.createUser(user);
+        User savedUser = userService.createUser(user);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(createdUser);
+                .body(savedUser);
     }
 
     // Update a user
@@ -55,8 +55,7 @@ public class UserController {
 
         return userService.updateUser(id, user)
                 .map(ResponseEntity::ok)
-                .orElseGet(() ->
-                        ResponseEntity.notFound().build());
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     // Delete a user
@@ -72,7 +71,17 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public List<User> searchUsers(@RequestParam String name) {
+    public List<User> searchUsers(
+            @RequestParam String name) {
+
         return userService.searchUsersByName(name);
     }
+
+    @GetMapping("/email")
+    public List<User> getUsersByEmail(
+            @RequestParam String email) {
+
+        return userService.getUsersByEmail(email);
+    }
+
 }

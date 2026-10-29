@@ -1,3 +1,4 @@
+
 package com.example.userapp;
 
 import com.example.userapp.User;
@@ -25,18 +26,34 @@ public class UserService {
     }
 
     public User createUser(User user) {
+        user.setId(null);
         return userRepository.save(user);
     }
 
-    public Optional<User> updateUser(Long id, User user) {
-        return userRepository.update(id, user);
+    public Optional<User> updateUser(Long id, User updatedUser) {
+        return userRepository.findById(id)
+                .map(existingUser -> {
+                    existingUser.setName(updatedUser.getName());
+                    existingUser.setEmail(updatedUser.getEmail());
+                    return userRepository.save(existingUser);
+                });
     }
 
     public boolean deleteUser(Long id) {
-        return userRepository.deleteById(id);
+        if (!userRepository.existsById(id)) {
+            return false;
+        }
+
+        userRepository.deleteById(id);
+        return true;
     }
 
     public List<User> searchUsersByName(String name) {
-        return userRepository.findByName(name);
+        return userRepository.findByNameContainingIgnoreCase(name);
     }
+
+    public List<User> getUsersByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
 }
